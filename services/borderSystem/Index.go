@@ -4,25 +4,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"../../util"
-	"../../integrate/couchdb"
-	"fmt"
+	"../../config"
 	"time"
 )
 
 var (
-	root, timeFormat string
-	host, dbName string
+	root, dbName string
 )
 
 func init() {
-	root = "/tmp/filesystem"
-	timeFormat = "2006-01-02 - 15:04:05"
-	host = "mine:5984"
 	dbName = "file-system"
-}
-
-func saveToCouchDB(object map[string]interface{}) (map[string]interface{}, error){
-	return couchdb.Create(dbName, object)
+	custom := config.Get("custom")
+	rootCfg := config.GetByTarget(custom, "root")
+	if nil != rootCfg {
+		root = "/tmp/filesystem"
+	} else {
+		root = rootCfg.(string)
+	}
 }
 
 /**
