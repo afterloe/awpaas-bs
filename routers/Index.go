@@ -12,7 +12,7 @@ import (
 	路由列表
  */
 func Execute(route *gin.RouterGroup) {
-	route.POST("/fs/upload", FsUpload)
+	route.POST("/file", FsUpload)
 	route.GET("/remote/repository", RemoteList)
 	route.GET("/warehouse", WarehouseList)
 	route.PUT("/warehouse", WarehouseAppend)

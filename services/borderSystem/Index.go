@@ -1,91 +1,57 @@
-package warehouse
+package borderSystem
 
 import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"../../util"
 	"../../integrate/couchdb"
-	"../../config"
-	"../../exceptions"
-	"reflect"
+	"fmt"
+	"time"
 )
 
 var (
-	addr,port  string
-	dbName string
+	root, timeFormat string
+	host, dbName string
 )
 
 func init() {
-	db := config.GetByTarget(config.Get("services"), "db")
-	addr = config.GetByTarget(db, "addr").(string)
-	port = config.GetByTarget(db, "port").(string)
-	addr += ":" + port
-	dbName = "registry"
+	root = "/tmp/filesystem"
+	timeFormat = "2006-01-02 - 15:04:05"
+	host = "mine:5984"
+	dbName = "file-system"
 }
 
-type Module struct {
-	Name, Group, Remarks, Version, Fid string
-	PackInfo map[string]interface{}
-}
-
-/**
-	参数检测
-*/
-func (this *Module) Check(args ...string) error {
-	value := reflect.ValueOf(*this)
-	for _, arg := range args {
-		v := value.FieldByName(arg)
-		if !v.IsValid() {
-			break
-		}
-		if "" == v.Interface() {
-			return &exceptions.Error{Msg: "lack param " + arg, Code: 400}
-		}
-	}
-
-	return nil
+func saveToCouchDB(object map[string]interface{}) (map[string]interface{}, error){
+	return couchdb.Create(dbName, object)
 }
 
 /**
-	补充文件信息
+	文件上传
  */
-func supplementFileStatus(module *Module) (*Module, error) {
-	reply, _ := couchdb.Read("file-system/" + module.Fid, nil)
-	if "not_found" == reply["error"]{
-		return nil, &exceptions.Error{"pack info not found", 404}
-	}
-	delete(reply, "_id")
-	delete(reply, "_rev")
-	module.PackInfo = reply
-	return module, nil
-}
-
-/**
-	发送至远程
-*/
-func (this *Module) AppendToRemote() (map[string]interface{}, error) {
-	this, err := supplementFileStatus(this)
+func FsUpload(context *gin.Context) {
+	file, err := context.FormFile("file")
 	if nil != err {
-		return nil, err
+		context.JSON(http.StatusBadRequest, util.Fail(400, "file not found."))
+		return
 	}
-	return couchdb.Create(dbName, this)
-}
-
-/**
-	获取包列表
-*/
-func GetList(skip, limit string) []interface{} {
-	reply, _ :=couchdb.Read(dbName + "/_all_docs", map[string]interface{}{
-		"skip": skip,
-		"limit": limit,
-		"include_docs": "true",
-	})
-	var list = make([]interface{}, 0)
-	if "not_found" == reply["error"]{
-		return list
+	fs := &fsFile{
+		name: file.Filename,
+		savePath: root,
+		contentType: file.Header.Get("Content-Type"),
+		key: util.GeneratorUUID(),
+		uploadTime: time.Now().Unix(),
+		size: file.Size,
+		status: true,
 	}
-	for _, r := range (reply["rows"].([]interface{})) {
-		doc := (r.(map[string]interface{}))["doc"].(map[string]interface{})
-		delete(doc, "_rev")
-		delete(doc, "PackInfo")
-		list = append(list, doc)
+	object, err := saveToCouchDB(fs.generatorMap())
+	if nil != err {
+		context.JSON(http.StatusInternalServerError, util.Error(err))
+		return
 	}
-	return list
+	err = context.SaveUploadedFile(file, fs.generatorSavePath())
+	if nil != err {
+		context.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
+		return
+	}
+	context.JSON(http.StatusOK, util.Success(object))
 }
