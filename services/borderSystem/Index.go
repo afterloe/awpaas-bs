@@ -8,14 +8,10 @@ import (
 )
 
 var (
-	root, timeFormat string
-	host, dbName string
+	root, dbName string
 )
 
 func init() {
-	root = "/tmp/filesystem"
-	timeFormat = "2006-01-02 - 15:04:05"
-	host = "mine:5984"
 	dbName = "file-system"
 }
 

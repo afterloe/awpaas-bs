@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+var (
+	timeFormat string
+)
+
+func init() {
+	timeFormat = "2006-01-02 - 15:04:05"
+}
+
 type fsFile struct {
 	name, savePath, contentType, key string
 	uploadTime, size int64
