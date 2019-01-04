@@ -1,6 +1,6 @@
 {
   "custom": {
-
+    "root": "/tmp/filesystem"
   },
   "info": {
     "name": "awpaas-bs",

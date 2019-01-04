@@ -67,6 +67,7 @@ func readEnv() {
 
 /**
 	获取配置项
+
  	@param key string 配置项key
 	@return interface{} 配置内容
  */

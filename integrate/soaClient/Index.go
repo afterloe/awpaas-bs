@@ -83,12 +83,12 @@ func GeneratorClient() *http.Client {
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{ Timeout: 30 * time.Second,}).DialContext,
+			DialContext: (&net.Dialer{ Timeout: 5 * time.Second,}).DialContext,
 			MaxIdleConns:        maxIdleConn,
 			MaxIdleConnsPerHost: maxIdleConnPerHost,
 			IdleConnTimeout:	 time.Duration(idleConnTimeout)* time.Second,
 		},
-		Timeout: 30 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 	return client
 }
