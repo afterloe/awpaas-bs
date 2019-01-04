@@ -1,10 +1,8 @@
 package borderSystem
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"../../util"
 	"../../integrate/couchdb"
+	"../../util"
 	"fmt"
 	"time"
 )
@@ -21,37 +19,38 @@ func init() {
 	dbName = "file-system"
 }
 
-func saveToCouchDB(object map[string]interface{}) (map[string]interface{}, error){
-	return couchdb.Create(dbName, object)
+func (this *fsFile) SaveToDB() (map[string]interface{}, error){
+	return couchdb.Create(dbName, this)
 }
 
-/**
-	文件上传
- */
-func FsUpload(context *gin.Context) {
-	file, err := context.FormFile("file")
-	if nil != err {
-		context.JSON(http.StatusBadRequest, util.Fail(400, "file not found."))
-		return
-	}
-	fs := &fsFile{
-		name: file.Filename,
+func Default(name, contentType string, size int64) *fsFile {
+	return &fsFile{
 		savePath: root,
-		contentType: file.Header.Get("Content-Type"),
 		key: util.GeneratorUUID(),
 		uploadTime: time.Now().Unix(),
-		size: file.Size,
+		name: name,
+		contentType: contentType,
+		size: size,
 		status: true,
 	}
-	object, err := saveToCouchDB(fs.generatorMap())
-	if nil != err {
-		context.JSON(http.StatusInternalServerError, util.Error(err))
-		return
-	}
-	err = context.SaveUploadedFile(file, fs.generatorSavePath())
-	if nil != err {
-		context.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
-		return
-	}
-	context.JSON(http.StatusOK, util.Success(object))
+}
+
+func GetRoot() string {
+	return root
+}
+
+//func (this *fsFile) GeneratorMap() map[string]interface{} {
+//	return map[string]interface{}{
+//		"name": this.Name,
+//		"savePath": this.SavePath,
+//		"contentType": this.ContentType,
+//		"key": this.Key,
+//		"uploadTime": this.UploadTime,
+//		"size": this.Size,
+//		"status": this.Status,
+//	}
+//}
+
+func (this *fsFile) GeneratorFullPath() string {
+	return fmt.Sprintf("%s/%s", this.savePath, this.key)
 }
