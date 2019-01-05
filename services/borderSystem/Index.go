@@ -22,6 +22,16 @@ func (this *fsFile) SaveToDB() (map[string]interface{}, error){
 	return couchdb.Create(this)
 }
 
+func (this *fsFile) Del(f ...bool) error {
+	if 0 != len(f) { // 强制删除
+
+	} else { // 逻辑删除
+		
+	}
+
+	return nil
+}
+
 func Default(name, contentType string, size int64) *fsFile {
 	return &fsFile{
 		SavePath: root,

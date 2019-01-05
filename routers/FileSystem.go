@@ -24,6 +24,7 @@ func FsUpload(ctx *gin.Context) {
 	}
 	err = ctx.SaveUploadedFile(file, fs.GeneratorSavePath())
 	if nil != err {
+		fs.Del(true)
 		ctx.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
 		return
 	}
