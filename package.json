@@ -24,6 +24,7 @@
   },
   "services": {
     "db": {
+      "ping": true,
       "addr": "192.168.3.21",
       "port": "5984",
       "username": "ascs",
