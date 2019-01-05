@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	addr, port string
+	addr, port, dbName string
 	host, username, password string
 	key, value string
 )
@@ -24,6 +24,7 @@ func init() {
 	host = addr + ":" + port
 	username = config.GetByTarget(db, "username").(string)
 	password = config.GetByTarget(db, "password").(string)
+	dbName = config.GetByTarget(db, "database").(string)
 	ping()
 }
 
@@ -53,7 +54,7 @@ func autoCfg(response *http.Response) (map[string]interface{}, error) {
 	return r, nil
 }
 
-func Find(dbName string, conditions *condition) ([]interface{}, error) {
+func Find(conditions *condition) ([]interface{}, error) {
 	reqUrl := fmt.Sprintf("http://%s/%s/_find", host, dbName)
 	reTry:
 	remote, err := http.NewRequest("POST", reqUrl, strings.NewReader(conditions.String()))
@@ -78,12 +79,12 @@ func Find(dbName string, conditions *condition) ([]interface{}, error) {
 	return reply["docs"].([]interface{}), err
 }
 
-func Read(dbName string, params map[string]interface{}) (map[string]interface{}, error) {
+func ReadAll(params map[string]interface{}) (map[string]interface{}, error) {
 	var reqUrl string
 	if nil != params {
-		reqUrl = fmt.Sprintf("http://%s/%s?%s", host, dbName, soaClient.Encode(params))
+		reqUrl = fmt.Sprintf("http://%s/%s/_all_docs?%s", host, dbName, soaClient.Encode(params))
 	} else {
-		reqUrl = fmt.Sprintf("http://%s/%s", host, dbName)
+		reqUrl = fmt.Sprintf("http://%s/%s/_all_docs", host, dbName)
 	}
 	reTry:
 	remote, err := http.NewRequest("GET", reqUrl, nil)
@@ -102,7 +103,7 @@ func Read(dbName string, params map[string]interface{}) (map[string]interface{},
 	return reply, nil
 }
 
-func CreateDB(dbName string) (bool, error) {
+func CreateDB() (bool, error) {
 	reqUrl := fmt.Sprintf("http://%s/%s", host, dbName)
 	reTry:
 	remote, err := http.NewRequest("PUT", reqUrl, nil)
@@ -144,7 +145,7 @@ func getUUID(count int) (interface{}, error){
 	return id,nil
 }
 
-func Create(dbName string, vol interface{}) (map[string]interface{}, error) {
+func Create(vol interface{}) (map[string]interface{}, error) {
 	id, _ := getUUID(1)
 	reqUrl := fmt.Sprintf("http://%s/%s/%v", host, dbName, id)
 	reTry:
@@ -155,8 +156,8 @@ func Create(dbName string, vol interface{}) (map[string]interface{}, error) {
 		return nil, err
 	}
 	reply, err := soaClient.Invoke(remote, "couchDB-sdk", nil)
-	if "not_found" == reply["error"]{
-		CreateDB(dbName)
+	if "not_found" == reply["error"] {
+		CreateDB()
 		goto reTry
 	}
 	return reply, nil

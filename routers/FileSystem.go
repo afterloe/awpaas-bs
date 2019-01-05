@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"../util"
 	"../services/borderSystem"
-	"strconv"
 )
 
 /**
@@ -32,8 +31,7 @@ func FsUpload(ctx *gin.Context) {
 }
 
 func FsListAll(ctx *gin.Context) {
-	begin, limit := pageCondition(ctx)
-	reply := borderSystem.GetAll(strconv.Itoa(begin), strconv.Itoa(limit))
+	reply := borderSystem.GetAll(pageCondition(ctx))
 	ctx.JSON(http.StatusOK, util.Success(reply))
 }
 
