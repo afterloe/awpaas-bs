@@ -24,20 +24,35 @@ func (this *fsFile) SaveToDB() (map[string]interface{}, error){
 
 func Default(name, contentType string, size int64) *fsFile {
 	return &fsFile{
-		savePath: root,
-		key: util.GeneratorUUID(),
-		uploadTime: time.Now().Unix(),
-		name: name,
-		contentType: contentType,
-		size: size,
-		status: true,
+		SavePath: root,
+		Key: util.GeneratorUUID(),
+		UploadTime: time.Now().Unix(),
+		Name: name,
+		ContentType: contentType,
+		Size: size,
+		Status: true,
 	}
 }
 
-func GetRoot() string {
-	return root
+func (this *fsFile) GeneratorSavePath() string {
+	return fmt.Sprintf("%s/%s", this.SavePath, this.Key)
 }
 
-func (this *fsFile) GeneratorSavePath() string {
-	return fmt.Sprintf("%s/%s", this.savePath, this.key)
+func GetList(skip, limit string) []interface{} {
+	reply, _ :=couchdb.Read(dbName + "/_all_docs", map[string]interface{}{
+		"skip": skip,
+		"limit": limit,
+		"include_docs": "true",
+	})
+	var list = make([]interface{}, 0)
+	if "not_found" == reply["error"]{
+		return list
+	}
+	for _, r := range (reply["rows"].([]interface{})) {
+		doc := (r.(map[string]interface{}))["doc"].(map[string]interface{})
+		delete(doc, "_rev")
+		delete(doc, "PackInfo")
+		list = append(list, doc)
+	}
+	return list
 }

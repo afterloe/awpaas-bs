@@ -5,27 +5,34 @@ import (
 	"net/http"
 	"../util"
 	"../services/borderSystem"
+	"strconv"
 )
 
 /**
 	文件上传
  */
-func FsUpload(context *gin.Context) {
-	file, err := context.FormFile("file")
+func FsUpload(ctx *gin.Context) {
+	file, err := ctx.FormFile("file")
 	if nil != err {
-		context.JSON(http.StatusBadRequest, util.Fail(400, "file not found."))
+		ctx.JSON(http.StatusBadRequest, util.Fail(400, "file not found."))
 		return
 	}
 	fs := borderSystem.Default(file.Filename, file.Header.Get("Content-Type"), file.Size)
 	object, err := fs.SaveToDB()
 	if nil != err {
-		context.JSON(http.StatusInternalServerError, util.Error(err))
-		returni
-	}
-	err = context.SaveUploadedFile(file, fs.GeneratorSavePath())
-	if nil != err {
-		context.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
+		ctx.JSON(http.StatusInternalServerError, util.Error(err))
 		return
 	}
-	context.JSON(http.StatusOK, util.Success(object))
+	err = ctx.SaveUploadedFile(file, fs.GeneratorSavePath())
+	if nil != err {
+		ctx.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
+		return
+	}
+	ctx.JSON(http.StatusOK, util.Success(object))
+}
+
+func FsList(ctx *gin.Context) {
+	begin, limit := pageCondition(ctx)
+	reply := borderSystem.GetList(strconv.Itoa(begin), strconv.Itoa(limit))
+	ctx.JSON(http.StatusOK, util.Success(reply))
 }

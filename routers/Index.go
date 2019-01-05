@@ -12,7 +12,8 @@ import (
 	路由列表
  */
 func Execute(route *gin.RouterGroup) {
-	route.POST("/file", FsUpload)
+	route.PUT("/file", FsUpload)
+	route.GET("/file", FsList)
 }
 
 /**
