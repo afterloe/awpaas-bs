@@ -14,13 +14,13 @@ func init() {
 }
 
 type fsFile struct {
-	name, savePath, contentType, key string
-	uploadTime, size int64
-	status bool
+	Name, SavePath, ContentType, Key string
+	UploadTime, Size int64
+	Status bool
 }
 
 func (this *fsFile) String() string {
 	return fmt.Sprintf("name: %s savePaht: %s contentType: %s key: %s, uploadTime: %s, size: %d, status %v",
-		this.name, this.savePath, this.contentType, this.key, time.Unix(this.uploadTime, 0).Format(timeFormat),
-		this.size, this.status)
+		this.Name, this.SavePath, this.ContentType, this.Key, time.Unix(this.UploadTime, 0).Format(timeFormat),
+		this.Size, this.Status)
 }
