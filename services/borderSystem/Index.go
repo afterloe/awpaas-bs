@@ -2,6 +2,7 @@ package borderSystem
 
 import (
 	"../../integrate/couchdb"
+	"../../exceptions"
 	"../../util"
 	"../../config"
 	"fmt"
@@ -50,9 +51,21 @@ func GetList(skip, limit string) []interface{} {
 	}
 	for _, r := range (reply["rows"].([]interface{})) {
 		doc := (r.(map[string]interface{}))["doc"].(map[string]interface{})
+
 		delete(doc, "_rev")
-		delete(doc, "PackInfo")
+		delete(doc, "SavePath")
+		delete(doc, "Key")
 		list = append(list, doc)
 	}
 	return list
+}
+
+func GetOne(key string) (map[string]interface{}, error) {
+	reply, _ := couchdb.Read(fmt.Sprintf("%s/%s", dbName, key), map[string]interface{}{
+		"conflicts": "true",
+	})
+	if "not_found" == reply["error"] {
+		return nil, &exceptions.Error{Code: 404, Msg: reply["reason"].(string)}
+	}
+	return reply, nil
 }

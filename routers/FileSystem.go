@@ -36,3 +36,17 @@ func FsList(ctx *gin.Context) {
 	reply := borderSystem.GetList(strconv.Itoa(begin), strconv.Itoa(limit))
 	ctx.JSON(http.StatusOK, util.Success(reply))
 }
+
+func FsFindOne(ctx *gin.Context) {
+	key := ctx.Param("key")
+	if "" == key {
+		ctx.JSON(http.StatusBadRequest, util.Fail(400, "key not found"))
+		return
+	}
+	reply, err := borderSystem.GetOne(key)
+	if nil != err {
+		ctx.JSON(http.StatusInternalServerError, util.Error(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, util.Success(reply))
+}
