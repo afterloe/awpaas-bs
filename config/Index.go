@@ -13,6 +13,23 @@ import (
 
 var packageJson map[string]interface{}
 
+/**
+	读取env中的数据进行覆盖package.json中的内容
+
+TODO
+ */
+func readEnv() {
+	redis_addr := os.Getenv("REDIS_ADDR")
+	redis_port := os.Getenv("REDIS_PORT")
+	server := packageJson["server"]
+	if "" != redis_addr {
+		setByTarget(GetByTarget(server, "cache"), "addr", redis_addr)
+	}
+	if "" != redis_port {
+		setByTarget(GetByTarget(server, "cache"), "port", redis_port)
+	}
+}
+
 func checkError(err error) {
 	if nil != err {
 		logger.Error("service", err.Error())
@@ -46,23 +63,6 @@ func init() {
 	}
 	packageJson = pkg
 	readEnv() // 读取env中的信息进行覆盖package.json中的信息
-}
-
-/**
-	读取env中的数据进行覆盖package.json中的内容
-
-TODO
- */
-func readEnv() {
-	redis_addr := os.Getenv("REDIS_ADDR")
-	redis_port := os.Getenv("REDIS_PORT")
-	server := packageJson["server"]
-	if "" != redis_addr {
-		setByTarget(GetByTarget(server, "cache"), "addr", redis_addr)
-	}
-	if "" != redis_port {
-		setByTarget(GetByTarget(server, "cache"), "port", redis_port)
-	}
 }
 
 /**

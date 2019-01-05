@@ -25,12 +25,17 @@ func init() {
 	username = config.GetByTarget(db, "username").(string)
 	password = config.GetByTarget(db, "password").(string)
 	dbName = config.GetByTarget(db, "database").(string)
-	ping()
+	// 如果开启检测
+	flg := config.GetByTarget(db, "ping")
+	if nil != flg {
+		if flg.(bool) {
+			ping()
+		}
+	}
 }
 
 func ping() {
-	reqUrl := fmt.Sprintf("http://%s", host)
-	remote, err := http.NewRequest("GET", reqUrl, nil)
+	remote, err := http.NewRequest("GET", fmt.Sprintf("http://%s", host), nil)
 	if nil != err {
 		logger.Error(err)
 		return
@@ -63,16 +68,11 @@ func Find(conditions *condition) ([]interface{}, error) {
 	if nil != err {
 		return nil, err
 	}
-	reply, err := soaClient.Invoke(remote, "couchDB-sdk", func(response *http.Response) (map[string]interface{}, error) {
-		reply, _ := ioutil.ReadAll(response.Body)
-		r, _ := soaClient.JsonToObject(string(reply))
-		if 200 == response.StatusCode {
-			return r, nil
-		} else {
-			return nil, &exceptions.Error{Code: response.StatusCode, Msg: r["reason"].(string)}
-		}
-	})
-	if nil != err && 401 == (err).(*exceptions.Error).Code {
+	reply, err := soaClient.Invoke(remote, "couchDB-sdk", autoCfg)
+	if nil != err {
+		return nil, err
+	}
+	if nil != reply["needLogin"] {
 		Login()
 		goto reTry
 	}
@@ -112,28 +112,19 @@ func CreateDB() (bool, error) {
 	if nil != err {
 		return false, err
 	}
-	_, err = soaClient.Invoke(remote, "couchDB-sdk", func(response *http.Response) (map[string]interface{}, error) {
-		reply, _ := ioutil.ReadAll(response.Body)
-		r, _ := soaClient.JsonToObject(string(reply))
-		if 201 == response.StatusCode {
-			return nil, nil
-		} else {
-			return nil, &exceptions.Error{Code: response.StatusCode, Msg: r["reason"].(string)}
-		}
-	})
-	if nil == err {
-		return true, err
+	reply, err := soaClient.Invoke(remote, "couchDB-sdk", autoCfg)
+	if nil != err {
+		return false, err
 	}
-	if 401 == (err).(*exceptions.Error).Code {
+	if nil != reply["needLogin"] {
 		Login()
 		goto reTry
 	}
-	return false, err
+	return true, err
 }
 
 func getUUID(count int) (interface{}, error){
-	reqUrl := fmt.Sprintf("http://%s/_uuids?count=%d", host, count)
-	remote, err := http.NewRequest("GET", reqUrl, nil)
+	remote, err := http.NewRequest("GET", fmt.Sprintf("http://%s/_uuids?count=%d", host, count), nil)
 	if nil != err {
 		return nil, err
 	}

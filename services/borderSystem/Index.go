@@ -26,7 +26,7 @@ func (this *fsFile) Del(f ...bool) error {
 	if 0 != len(f) { // 强制删除
 
 	} else { // 逻辑删除
-		
+
 	}
 
 	return nil
