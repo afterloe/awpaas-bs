@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"../util"
 	"../services/borderSystem"
-	"time"
 )
 
 /**
@@ -17,21 +16,13 @@ func FsUpload(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, util.Fail(400, "file not found."))
 		return
 	}
-	fs := &borderSystem.FsFile{
-		Name: file.Filename,
-		SavePath: borderSystem.GetRoot(),
-		ContentType: file.Header.Get("Content-Type"),
-		Key: util.GeneratorUUID(),
-		UploadTime: time.Now().Unix(),
-		Size: file.Size,
-		Status: true,
-	}
+	fs := borderSystem.Default(file.Filename, file.Header.Get("Content-Type"), file.Size)
 	object, err := fs.SaveToDB()
 	if nil != err {
 		context.JSON(http.StatusInternalServerError, util.Error(err))
-		return
+		returni
 	}
-	err = context.SaveUploadedFile(file, fs.generatorSavePath())
+	err = context.SaveUploadedFile(file, fs.GeneratorSavePath())
 	if nil != err {
 		context.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
 		return

@@ -3,6 +3,7 @@ package borderSystem
 import (
 	"../../integrate/couchdb"
 	"../../util"
+	"../../config"
 	"fmt"
 	"time"
 )
@@ -12,6 +13,8 @@ var (
 )
 
 func init() {
+	cfg := config.Get("custom")
+	root = config.GetByTarget(cfg, "root").(string)
 	dbName = "file-system"
 }
 
@@ -35,18 +38,6 @@ func GetRoot() string {
 	return root
 }
 
-//func (this *fsFile) GeneratorMap() map[string]interface{} {
-//	return map[string]interface{}{
-//		"name": this.Name,
-//		"savePath": this.SavePath,
-//		"contentType": this.ContentType,
-//		"key": this.Key,
-//		"uploadTime": this.UploadTime,
-//		"size": this.Size,
-//		"status": this.Status,
-//	}
-//}
-
-func (this *fsFile) GeneratorFullPath() string {
+func (this *fsFile) GeneratorSavePath() string {
 	return fmt.Sprintf("%s/%s", this.savePath, this.key)
 }
