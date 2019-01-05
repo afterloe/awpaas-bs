@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"../util"
 	"../services/borderSystem"
-	"strconv"
 )
 
 /**
@@ -25,6 +24,7 @@ func FsUpload(ctx *gin.Context) {
 	}
 	err = ctx.SaveUploadedFile(file, fs.GeneratorSavePath())
 	if nil != err {
+		fs.Del(true)
 		ctx.JSON(http.StatusInternalServerError, util.Fail(500, "io exception."))
 		return
 	}
@@ -32,8 +32,7 @@ func FsUpload(ctx *gin.Context) {
 }
 
 func FsListAll(ctx *gin.Context) {
-	begin, limit := pageCondition(ctx)
-	reply := borderSystem.GetAll(strconv.Itoa(begin), strconv.Itoa(limit))
+	reply := borderSystem.GetAll(pageCondition(ctx))
 	ctx.JSON(http.StatusOK, util.Success(reply))
 }
 
