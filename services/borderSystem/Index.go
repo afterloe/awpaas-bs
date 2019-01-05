@@ -39,7 +39,7 @@ func (this *fsFile) GeneratorSavePath() string {
 	return fmt.Sprintf("%s/%s", this.SavePath, this.Key)
 }
 
-func GetList(skip, limit string) []interface{} {
+func GetAll(skip, limit string) []interface{} {
 	reply, _ :=couchdb.Read(dbName + "/_all_docs", map[string]interface{}{
 		"skip": skip,
 		"limit": limit,
@@ -57,6 +57,14 @@ func GetList(skip, limit string) []interface{} {
 		list = append(list, doc)
 	}
 	return list
+}
+
+func GetList(begin, limit int) []interface{} {
+	condition := couchdb.Condition().Append("Status", "$eq", true).
+		Fields("Name", "UploadTime", "_id").
+		Page(begin, limit)
+	reply, _ := couchdb.Find(dbName, condition)
+	return reply
 }
 
 func GetOne(key string) (map[string]interface{}, error) {

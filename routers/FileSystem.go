@@ -31,9 +31,15 @@ func FsUpload(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, util.Success(object))
 }
 
+func FsListAll(ctx *gin.Context) {
+	begin, limit := pageCondition(ctx)
+	reply := borderSystem.GetAll(strconv.Itoa(begin), strconv.Itoa(limit))
+	ctx.JSON(http.StatusOK, util.Success(reply))
+}
+
 func FsList(ctx *gin.Context) {
 	begin, limit := pageCondition(ctx)
-	reply := borderSystem.GetList(strconv.Itoa(begin), strconv.Itoa(limit))
+	reply := borderSystem.GetList(begin, limit)
 	ctx.JSON(http.StatusOK, util.Success(reply))
 }
 
