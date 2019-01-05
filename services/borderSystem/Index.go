@@ -51,7 +51,6 @@ func GetList(skip, limit string) []interface{} {
 	}
 	for _, r := range (reply["rows"].([]interface{})) {
 		doc := (r.(map[string]interface{}))["doc"].(map[string]interface{})
-
 		delete(doc, "_rev")
 		delete(doc, "SavePath")
 		delete(doc, "Key")
@@ -61,17 +60,12 @@ func GetList(skip, limit string) []interface{} {
 }
 
 func GetOne(key string) (map[string]interface{}, error) {
-	_id := couchdb.Condition()
-	_id["$eq"] = key
-	Status := couchdb.Condition()
-	Status["$eq"] = true
-
-
-	reply, _ := couchdb.Read(fmt.Sprintf("%s/%s", dbName, key), map[string]interface{}{
-		"conflicts": "true",
-	})
-	if "not_found" == reply["error"] {
-		return nil, &exceptions.Error{Code: 404, Msg: reply["reason"].(string)}
+	condition := couchdb.Condition().Append("_id", "$eq", key).
+		Append("Status", "$eq", true)
+	reply, _ := couchdb.Find(dbName, condition)
+	if 0 != len(reply) {
+		return reply[0].(map[string]interface{}), nil
+	} else {
+		return nil, &exceptions.Error{Msg: "no such this file", Code: 404}
 	}
-	return reply, nil
 }
