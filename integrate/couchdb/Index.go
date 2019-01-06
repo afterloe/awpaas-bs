@@ -136,8 +136,7 @@ func getUUID(count int) (interface{}, error){
 	return id,nil
 }
 
-func Create(vol interface{}) (map[string]interface{}, error) {
-	id, _ := getUUID(1)
+func Update(id , vol interface{}) (map[string]interface{}, error) {
 	reqUrl := fmt.Sprintf("http://%s/%s/%v", host, dbName, id)
 	reTry:
 	remote, err := http.NewRequest("PUT", reqUrl, soaClient.GeneratorBody(vol))
@@ -152,6 +151,11 @@ func Create(vol interface{}) (map[string]interface{}, error) {
 		goto reTry
 	}
 	return reply, nil
+}
+
+func Create(vol interface{}) (map[string]interface{}, error) {
+	id, _ := getUUID(1)
+	return Update(id, vol)
 }
 
 func Login() (bool, error) {
