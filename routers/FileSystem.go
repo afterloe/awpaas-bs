@@ -37,8 +37,30 @@ func FsListAll(ctx *gin.Context) {
 }
 
 func FsList(ctx *gin.Context) {
-	begin, limit := pageCondition(ctx)
-	reply := borderSystem.GetList(begin, limit)
+	reply := borderSystem.GetList(pageCondition(ctx))
+	ctx.JSON(http.StatusOK, util.Success(reply))
+}
+
+func FsDel(ctx *gin.Context) {
+	id := ctx.DefaultQuery("id", "")
+	f := ctx.DefaultQuery("f", "")
+	if "" == id {
+		ctx.JSON(http.StatusBadRequest, util.Fail(400, "lack param -> id"))
+		return
+	}
+	var (
+		reply map[string]interface{}
+		err error
+	)
+	if "" != f {
+		reply, err = borderSystem.Del(id)
+	} else {
+		reply, err = borderSystem.Del(id, true)
+	}
+	if nil != err {
+		ctx.JSON(http.StatusInternalServerError, util.Error(err))
+		return
+	}
 	ctx.JSON(http.StatusOK, util.Success(reply))
 }
 

@@ -14,7 +14,7 @@ func init() {
 }
 
 type fsFile struct {
-	Name, SavePath, ContentType, Key string
+	id, Name, SavePath, ContentType, Key string
 	UploadTime, Size int64
 	Status bool
 }

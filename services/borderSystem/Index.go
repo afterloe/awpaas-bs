@@ -31,6 +31,23 @@ func (this *fsFile) Del(f ...bool) error {
 
 	return nil
 }
+/**
+	TODO
+*/
+func Del(id string, f ...bool) (error) {
+	reply, err := GetOne(id, "_id", "Key", "SavePath", "Status")
+	if nil != err {
+		return err
+	}
+	file := &fsFile{
+		id: reply["_id"].(string),
+		Key: reply["Key"].(string),
+		SavePath: reply["SavePath"].(string),
+		UploadTime: reply["UploadTime"].(int64),
+		Status: reply["Status"].(bool),
+	}
+	return file.Del(f...)
+}
 
 func Default(name, contentType string, size int64) *fsFile {
 	return &fsFile{
@@ -62,9 +79,12 @@ func GetList(begin, limit int) []interface{} {
 	return reply
 }
 
-func GetOne(key string) (map[string]interface{}, error) {
+func GetOne(key string, files ...string) (map[string]interface{}, error) {
 	condition := couchdb.Condition().Append("_id", "$eq", key).
 		Append("Status", "$eq", true)
+	if 0 != len(files) {
+		condition = condition.Fields(files...)
+	}
 	reply, _ := couchdb.Find(condition)
 	if 0 != len(reply) {
 		return reply[0].(map[string]interface{}), nil
