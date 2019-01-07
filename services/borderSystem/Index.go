@@ -7,6 +7,8 @@ import (
 	"../../config"
 	"fmt"
 	"time"
+	"../../integrate/logger"
+	"os"
 )
 
 var (
@@ -23,24 +25,23 @@ func (this *fsFile) SaveToDB() (map[string]interface{}, error){
 }
 
 func (this *fsFile) Del(f ...bool) error {
+	this.Status = false
+	this.ModifyTime = time.Now().Unix()
+	_, err := this.SaveToDB()
 	if 0 != len(f) { // 强制删除
-
+		logger.Logger("borderSystem", "强制删除")
+		return os.Remove(this.GeneratorSavePath())
 	} else { // 逻辑删除
-
+		logger.Logger("borderSystem", "逻辑删除")
+		return err
 	}
-
-	return nil
 }
 
-/**
-	TODO
-*/
-func Del(id string, f ...bool) (error) {
-	file, err := GetOne(id, "_id")
+func Del(id string, f ...bool) error {
+	file, err := GetOne(id)
 	if nil != err {
 		return err
 	}
-
 	return file.Del(f...)
 }
 

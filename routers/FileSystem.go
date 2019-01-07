@@ -51,7 +51,7 @@ func FsDel(ctx *gin.Context) {
 	var (
 		err error
 	)
-	if "" != f {
+	if "" == f {
 		err = borderSystem.Del(id)
 	} else {
 		err = borderSystem.Del(id, true)
