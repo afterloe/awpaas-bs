@@ -39,7 +39,7 @@ func (this *condition) Page(begin, limit int) *condition {
 type obj struct {
 	Id string `json:"_id"`
 	Rev string `json:"_rev"`
-	Delete bool `json:"_delete"`
+	Delete bool `json:"_deleted"`
 }
 
 func GeneratorDelObj(id, rev string) *obj {
