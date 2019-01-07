@@ -74,5 +74,5 @@ func FsFindOne(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, util.Error(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, util.Success(reply))
+	ctx.JSON(http.StatusOK, util.Success(*reply))
 }

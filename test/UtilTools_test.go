@@ -12,7 +12,7 @@ func Test_GetList(t *testing.T) {
 }
 
 func Test_GetOne(t *testing.T) {
-	fs, err := borderSystem.GetOne("db59c967fd601669751e6397ed00170c")
+	fs, err := borderSystem.GetOne("c6224a3eb806bf144ea7da52e900211a")
 	if nil != err {
 		t.Error(err)
 	}
