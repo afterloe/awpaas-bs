@@ -31,6 +31,7 @@ func (this *fsFile) Del(f ...bool) error {
 
 	return nil
 }
+
 /**
 	TODO
 */
