@@ -34,12 +34,11 @@ func (this *fsFile) Del(f ...bool) error {
 	if 0 != len(f) { // 强制删除
 		logger.Logger("borderSystem", "强制删除")
 		couchdb.Delete(couchdb.GeneratorDelObj(this.Id, this.rev))
-		// TODO
 		err := os.Remove(this.GeneratorSavePath())
 		if nil != err {
-			return nil
+			return &exceptions.Error{Msg: "file has been deleted.", Code: 400}
 		}
-		return &exceptions.Error{Msg: "file has been deleted.", Code: 400}
+		return nil
 	} else { // 逻辑删除
 		this.Status = false
 		this.ModifyTime = time.Now().Unix()
