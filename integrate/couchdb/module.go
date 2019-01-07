@@ -35,3 +35,17 @@ func (this *condition) Page(begin, limit int) *condition {
 	(*this)["limit"] = limit
 	return this
 }
+
+type obj struct {
+	Id string `json:"_id"`
+	Rev string `json:"_rev"`
+	Delete bool `json:"_deleted"`
+}
+
+func GeneratorDelObj(id, rev string) *obj {
+	return &obj{
+		Id: id,
+		Rev: rev,
+		Delete: true,
+	}
+}

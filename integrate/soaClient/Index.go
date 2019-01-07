@@ -93,12 +93,6 @@ func GeneratorClient() *http.Client {
 	return client
 }
 
-func GeneratorPostHeader() map[string]string {
-	return map[string]string{
-		"Content-Type": "application/x-www-form-urlencoded",
-	}
-}
-
 func GeneratorBody(vol interface{}) io.Reader {
 	buf, err := json.Marshal(vol)
 	if nil != err {

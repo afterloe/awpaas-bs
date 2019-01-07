@@ -7,6 +7,8 @@ import (
 	"../../config"
 	"fmt"
 	"time"
+	"../../integrate/logger"
+	"os"
 )
 
 var (
@@ -18,29 +20,39 @@ func init() {
 	root = config.GetByTarget(cfg, "root").(string)
 }
 
-func (this *fsFile) SaveToDB() (map[string]interface{}, error){
+func (this *fsFile) SaveToDB(rev ...bool) (map[string]interface{}, error){
+	if 0 != len(rev) {
+		jsonStr, _ := util.FormatToString(*this)
+		m, _ := util.FormatToMap(jsonStr)
+		m["_rev"] = this.rev
+		return couchdb.Update(this.Id, m)
+	}
 	return couchdb.Create(this)
 }
 
 func (this *fsFile) Del(f ...bool) error {
 	if 0 != len(f) { // 强制删除
-
+		logger.Logger("borderSystem", "强制删除")
+		couchdb.Delete(couchdb.GeneratorDelObj(this.Id, this.rev))
+		err := os.Remove(this.GeneratorSavePath())
+		if nil != err {
+			return &exceptions.Error{Msg: "file has been deleted.", Code: 400}
+		}
+		return nil
 	} else { // 逻辑删除
-
+		this.Status = false
+		this.ModifyTime = time.Now().Unix()
+		_, err := this.SaveToDB(true) // 强制更新
+		logger.Logger("borderSystem", "逻辑删除")
+		return err
 	}
-
-	return nil
 }
 
-/**
-	TODO
-*/
-func Del(id string, f ...bool) (error) {
-	file, err := GetOne(id, "_id")
+func Del(id string, f ...bool) error {
+	file, err := GetOne(id)
 	if nil != err {
 		return err
 	}
-
 	return file.Del(f...)
 }
 
@@ -83,7 +95,10 @@ func GetOne(key string, files ...string) (*fsFile, error) {
 	reply, _ := couchdb.Find(condition)
 	if 0 != len(reply) {
 		var fs fsFile
-		couchdb.Decode(reply[0], &fs)
+		item := reply[0].(map[string]interface{})
+		couchdb.Decode(item, &fs)
+		fs.Id = item["_id"].(string)
+		fs.rev = item["_rev"].(string)
 		return &fs, nil
 	} else {
 		return nil, &exceptions.Error{Msg: "no such this file", Code: 404}
