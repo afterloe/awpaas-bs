@@ -49,19 +49,18 @@ func FsDel(ctx *gin.Context) {
 		return
 	}
 	var (
-		reply map[string]interface{}
 		err error
 	)
 	if "" != f {
-		reply, err = borderSystem.Del(id)
+		err = borderSystem.Del(id)
 	} else {
-		reply, err = borderSystem.Del(id, true)
+		err = borderSystem.Del(id, true)
 	}
 	if nil != err {
 		ctx.JSON(http.StatusInternalServerError, util.Error(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, util.Success(reply))
+	ctx.JSON(http.StatusOK, util.Success("done"))
 }
 
 func FsFindOne(ctx *gin.Context) {
@@ -75,5 +74,5 @@ func FsFindOne(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, util.Error(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, util.Success(reply))
+	ctx.JSON(http.StatusOK, util.Success(*reply))
 }

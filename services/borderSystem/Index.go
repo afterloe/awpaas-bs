@@ -31,21 +31,16 @@ func (this *fsFile) Del(f ...bool) error {
 
 	return nil
 }
+
 /**
 	TODO
 */
 func Del(id string, f ...bool) (error) {
-	reply, err := GetOne(id, "_id", "Key", "SavePath", "Status")
+	file, err := GetOne(id, "_id")
 	if nil != err {
 		return err
 	}
-	file := &fsFile{
-		id: reply["_id"].(string),
-		Key: reply["Key"].(string),
-		SavePath: reply["SavePath"].(string),
-		UploadTime: reply["UploadTime"].(int64),
-		Status: reply["Status"].(bool),
-	}
+
 	return file.Del(f...)
 }
 
@@ -66,28 +61,30 @@ func (this *fsFile) GeneratorSavePath() string {
 }
 
 func GetAll(begin, limit int) []interface{} {
-	reply, _ := couchdb.Find(couchdb.Condition().Fields("_id", "Name", "UploadTime", "Size").
+	reply, _ := couchdb.Find(couchdb.Condition().Fields("_id", "name", "uploadTime", "size").
 		Page(begin, limit))
 	return reply
 }
 
 func GetList(begin, limit int) []interface{} {
-	condition := couchdb.Condition().Append("Status", "$eq", true).
-		Fields("Name", "UploadTime", "_id").
+	condition := couchdb.Condition().Append("status", "$eq", true).
+		Fields("name", "uploadTime", "_id").
 		Page(begin, limit)
 	reply, _ := couchdb.Find(condition)
 	return reply
 }
 
-func GetOne(key string, files ...string) (map[string]interface{}, error) {
+func GetOne(key string, files ...string) (*fsFile, error) {
 	condition := couchdb.Condition().Append("_id", "$eq", key).
-		Append("Status", "$eq", true)
+		Append("status", "$eq", true)
 	if 0 != len(files) {
 		condition = condition.Fields(files...)
 	}
 	reply, _ := couchdb.Find(condition)
 	if 0 != len(reply) {
-		return reply[0].(map[string]interface{}), nil
+		var fs fsFile
+		couchdb.Decode(reply[0], &fs)
+		return &fs, nil
 	} else {
 		return nil, &exceptions.Error{Msg: "no such this file", Code: 404}
 	}

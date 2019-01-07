@@ -14,9 +14,14 @@ func init() {
 }
 
 type fsFile struct {
-	id, Name, SavePath, ContentType, Key string
-	UploadTime, Size int64
-	Status bool
+	Id string `json:"id"`
+	Name string `json:"name"`
+	SavePath string `json:"savePath"`
+	ContentType string `json:"contentType"`
+	Key string `json:"key"`
+	UploadTime int64 `json:"uploadTime"`
+	Size int64 `json:"size"`
+	Status bool `json:"status"`
 }
 
 func (this *fsFile) String() string {
