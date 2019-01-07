@@ -23,6 +23,7 @@ type fsFile struct {
 	Size int64 `json:"size"`
 	Status bool `json:"status"`
 	ModifyTime int64 `json:"modifyTime"`
+	rev string
 }
 
 func (this *fsFile) String() string {

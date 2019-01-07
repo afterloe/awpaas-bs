@@ -59,6 +59,28 @@ func autoCfg(response *http.Response) (map[string]interface{}, error) {
 	return r, nil
 }
 
+func Delete(o ...*obj) (map[string]interface{}, error) {
+	reqUrl := fmt.Sprintf("http://%s/%s/_bulk_docs", host, dbName)
+	mapResult := make(map[string]interface{})
+	mapResult["docs"] = o
+	reTry:
+	remote, err := http.NewRequest("POST", reqUrl, soaClient.GeneratorBody(mapResult))
+	remote.AddCookie(&http.Cookie{Name: key, Value:value, HttpOnly: true})
+	remote.Header.Add("Content-Type", "application/json")
+	if nil != err {
+		return nil, err
+	}
+	reply, err := soaClient.Invoke(remote, "couchDB-sdk", autoCfg)
+	if nil != err {
+		return nil, err
+	}
+	if nil != reply["needLogin"] {
+		Login()
+		goto reTry
+	}
+	return reply, err
+}
+
 func Find(conditions *condition) ([]interface{}, error) {
 	reqUrl := fmt.Sprintf("http://%s/%s/_find", host, dbName)
 	reTry:
@@ -136,7 +158,7 @@ func getUUID(count int) (interface{}, error){
 	return id,nil
 }
 
-func Update(id , vol interface{}) (map[string]interface{}, error) {
+func Update(id, vol interface{}) (map[string]interface{}, error) {
 	reqUrl := fmt.Sprintf("http://%s/%s/%v", host, dbName, id)
 	reTry:
 	remote, err := http.NewRequest("PUT", reqUrl, soaClient.GeneratorBody(vol))
