@@ -15,18 +15,33 @@ var packageJson map[string]interface{}
 
 /**
 	读取env中的数据进行覆盖package.json中的内容
-
-TODO
  */
 func readEnv() {
-	redis_addr := os.Getenv("REDIS_ADDR")
-	redis_port := os.Getenv("REDIS_PORT")
-	server := packageJson["server"]
-	if "" != redis_addr {
-		setByTarget(GetByTarget(server, "cache"), "addr", redis_addr)
+	fs_root := os.Getenv("FS_ROOT")
+	db_addr := os.Getenv("DB_ADDR")
+	db_port := os.Getenv("DB_PORT")
+	db_uname := os.Getenv("DB_UNAME")
+	db_pwd := os.Getenv("DB_PWD")
+	db_name := os.Getenv("DB_NAME")
+	if "" != fs_root {
+		setByTarget(packageJson["custom"], "root", fs_root)
 	}
-	if "" != redis_port {
-		setByTarget(GetByTarget(server, "cache"), "port", redis_port)
+	service := packageJson["services"]
+	db := GetByTarget(service, "db")
+	if "" != db_addr {
+		setByTarget(db, "addr", db_addr)
+	}
+	if "" != db_port {
+		setByTarget(db, "port", db_port)
+	}
+	if "" != db_uname {
+		setByTarget(db, "username", db_uname)
+	}
+	if "" != db_pwd {
+		setByTarget(db, "password", db_pwd)
+	}
+	if "" != db_name {
+		setByTarget(db, "database", db_name)
 	}
 }
 
