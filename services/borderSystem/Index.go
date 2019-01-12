@@ -86,20 +86,20 @@ func GetList(begin, limit int) []interface{} {
 	return reply
 }
 
-func GetOne(key string, files ...string) (*fsFile, error) {
+func GetOne(key string, fields ...string) (*fsFile, error) {
 	condition := couchdb.Condition().Append("_id", "$eq", key).
 		Append("status", "$eq", true)
-	if 0 != len(files) {
-		condition = condition.Fields(files...)
+	if 0 != len(fields) {
+		condition = condition.Fields(fields...)
 	}
 	reply, _ := couchdb.Find(condition)
 	if 0 != len(reply) {
-		var fs fsFile
+		var target fsFile
 		item := reply[0].(map[string]interface{})
-		couchdb.Decode(item, &fs)
-		fs.Id = item["_id"].(string)
-		fs.rev = item["_rev"].(string)
-		return &fs, nil
+		couchdb.Decode(item, &target)
+		target.Id = item["_id"].(string)
+		target.rev = item["_rev"].(string)
+		return &target, nil
 	} else {
 		return nil, &exceptions.Error{Msg: "no such this file", Code: 404}
 	}
