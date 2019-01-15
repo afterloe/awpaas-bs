@@ -17,6 +17,7 @@ func Execute(route *gin.RouterGroup) {
 	route.DELETE("/file", FsDel)
 	route.GET("/all/file", FsListAll)
 	route.GET("/file/:key", FsFindOne)
+	route.GET("/download/:key", FsDownload)
 }
 
 /**
@@ -24,7 +25,7 @@ func Execute(route *gin.RouterGroup) {
  */
 func Info(context *gin.Context) {
 	info := config.Get("info").(map[string]interface{})
-	context.JSON(http.StatusOK, util.Success(info))
+	context.SecureJSON(http.StatusOK, util.Success(info))
 }
 
 /**
