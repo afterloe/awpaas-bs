@@ -25,8 +25,22 @@ docker run \
 --restart=always \
 --name file-system \
 -v /home/afterloe/file-system:/data \
---env DB_ADDR=172.17.0.5 \
+--env DB_ADDR=db \
 --env FS_ROOT=/data \
+awpaas/awpaas-bs:version
+```
+
+### docker swarm 启动
+```
+docker service create \
+--replicas 2 \
+--network awpaas \
+--name file-system \
+--detach=false \
+--env DB_ADDR=db \
+--env FS_ROOT=/tmp \
+--mount type=volume,source=file-system,destination=/tmp,volume-driver=vieux/sshfs,volume-opt=sshcmd=root@db:/root/volume-fs/file-system,volum
+e-opt=password=pwd,volume-opt=allow_other \
 awpaas/awpaas-bs:version
 ```
 
