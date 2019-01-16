@@ -94,6 +94,7 @@ func FsDownload(ctx *gin.Context) {
 		ctx.SecureJSON(http.StatusNotFound, util.Fail(404, "file is not found"))
 		return
 	}
+	ctx.Status(200)
 	ctx.Header("Content-Type", file.ContentType)
 	ctx.Header("Content-Disposition", "attachment;filename=" + string([]byte(file.Name)))
 	ctx.Header("Content-Length", string(stat.Size()))

@@ -20,14 +20,20 @@ DB_NAME | services.db.database | 数据库实例名
 ## 使用
 ### docker 单机启动
 ```
+#!/bin/bash
+name=file-system
+version=1.0.2
+
+docker rm -f $name
 docker run \
 -p 8080:8080 \
+-d \
 --restart=always \
---name file-system \
+--name $name \
+--env DB_ADDR=192.168.2.114 \
 -v /home/afterloe/file-system:/data \
---env DB_ADDR=db \
 --env FS_ROOT=/data \
-awpaas/awpaas-bs:version
+awpaas/awpaas-bs:$version
 ```
 
 ### docker swarm 启动
