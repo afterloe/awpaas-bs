@@ -1,6 +1,6 @@
-# awpaas-bs
-> create by afterloe (lm6289511@gmail.com)
-> Apache License 2.0
+# awpaas-bs  
+> create by afterloe (lm6289511@gmail.com)  
+> Apache License 2.0  
 
 ## 业务文件仓库
 awpaas border system (解决文件上传问题，负责微服务文件存储相关业务操作)
