@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"../../exceptions"
 	"encoding/json"
 	"net/url"
 	"strings"
+	"os"
 )
 
 var (
@@ -83,12 +85,12 @@ func GeneratorClient() *http.Client {
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{ Timeout: 5 * time.Second,}).DialContext,
+			DialContext: (&net.Dialer{ Timeout: 30 * time.Second,}).DialContext,
 			MaxIdleConns:        maxIdleConn,
 			MaxIdleConnsPerHost: maxIdleConnPerHost,
 			IdleConnTimeout:	 time.Duration(idleConnTimeout)* time.Second,
 		},
-		Timeout: 5 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 	return client
 }
@@ -99,4 +101,30 @@ func GeneratorBody(vol interface{}) io.Reader {
 		return nil
 	}
 	return strings.NewReader(string(buf))
+}
+
+func DownloadFile(url,savePath string) (map[string]interface{}, error) {
+	remote, err := http.NewRequest("GET", url, nil)
+	if nil != err {
+		return nil, err
+	}
+	return Invoke(remote, "soa-client", func(response *http.Response) (map[string]interface{}, error) {
+		if 200 != response.StatusCode {
+			return nil, &exceptions.Error{Msg: "download failed.", Code: 500}
+		}
+		_, e := os.Stat(savePath)
+		if nil != e {
+			os.Mkdir(savePath, os.ModePerm)
+		}
+		head := response.Header.Get("Content-Disposition")
+		filename := strings.Split(head, "attachment;filename=")[1]
+		desFile, _ := os.Create(savePath + "/" + filename)
+		io.Copy(desFile, response.Body)
+		defer desFile.Close()
+		defer response.Body.Close()
+		return map[string]interface{} {
+			"savePath": savePath,
+			"fileName": filename,
+		}, nil
+	})
 }
